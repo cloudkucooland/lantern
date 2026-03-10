@@ -1,0 +1,3 @@
+[submodule "components/neopixel"]
+	path = components/neopixel
+	url = git@github.com:cloudkucooland/neopixel.git
