@@ -1,56 +1,55 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "esp_log.h"
+// #include "esp_log.h"
 #include "driver/gpio.h"
 #include "neopixel.h"
+#include "esp_random.h"
 
-#define PIXEL_COUNT 8 
-#define NEOPIXEL_PIN GPIO_NUM_7
+#include "sdkconfig.h"
+#include "lantern.h"
 
-tNeopixelContext ctx;
+static inline int min(int a, int b) {
+  if (a < b) return a;
+  return b;
+}
 
-static void np_alloff(void);
+static uint32_t brightness = 1;
 
-void start_neopixel(void) {
+void start_neopixel(void *unused) {
+   int32_t rnd;
+   tNeopixelContext ctx;
+   tNeopixel pixel[PIXEL_COUNT];
+
    ctx = neopixel_Init_RGBW(PIXEL_COUNT, NEOPIXEL_PIN);
    assert(ctx);
 
-   // RGBW test on each pixel
-   tNeopixel pixel[] =
-   {
-       { 0, NP_RGBW(50,0,0,0) }, /* red */
-       { 0, NP_RGBW(0,50,0,0) }, /* green */
-       { 0, NP_RGBW(0,0,50,0) }, /* blue */
-       { 0, NP_RGBW(0,0,0,50) }, /* white */
-       { 0, NP_RGBW(0,0,0,0) },  /* off */
-   };
-
-   for (int p = 0; p < PIXEL_COUNT; p++) {
-      for(int j = 0; j < 5; j++) {
-         neopixel_SetPixel(ctx, &pixel[j], 1);
-         pixel[j].index++;
-         vTaskDelay(pdMS_TO_TICKS(200));
-      }
+   for(int i = 0; i < PIXEL_COUNT; i++) {
+     pixel[i].index = i;
+     pixel[i].rgb = NP_RGBW(0,0,0,0);
    }
+   neopixel_SetPixel(ctx, pixel, PIXEL_COUNT);
 
-   // pinwheel startup sequence
-   for(int i = 0; i < 500 * PIXEL_COUNT; ++i) {
-      tNeopixel pixel[] = {
-          { (i)   % PIXEL_COUNT, NP_RGBW(0, 0, 0, 0) },
-          { (i+3) % PIXEL_COUNT, NP_RGBW(0, 0, 0, 50) },
-      };
-      neopixel_SetPixel(ctx, pixel, 2);
-      vTaskDelay(pdMS_TO_TICKS(50));
+   while (1) {
+     for(int i = 0; i < PIXEL_COUNT; i++) {
+        rnd = esp_random();
+
+        pixel[i].rgb = NP_RGBW(
+          min((rnd & 0x0000000F), (rnd >> 8 & 0x0000000F)) * brightness, // green
+          (rnd >> 8 & 0x0000003F) * brightness, // red
+          min((rnd >> 16 & 0x0000000F), (rnd >> 8 & 0x0000000F)) * brightness, // blue
+	  (rnd >> 24 & 0x00000001) * brightness // white
+         );
+     }
+
+     neopixel_SetPixel(ctx, pixel, PIXEL_COUNT);
+     vTaskDelay(pdMS_TO_TICKS(50 + (rnd >> 20 & 0x0000007F)));
    }
-
-   np_alloff();
-
-   // neopixel_Deinit(ctx);
 }
 
-static void np_alloff(void) {
-   for (int p = 0; p < PIXEL_COUNT; p++) {
-     tNeopixel pixel = {p, NP_RGBW(0,0,0,0)};
-     neopixel_SetPixel(ctx, &pixel, 1);
-   }
+void set_brightness(int b) {
+  brightness = b;
+}
+
+int get_brightness(void) {
+  return brightness;
 }
