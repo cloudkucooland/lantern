@@ -12,21 +12,24 @@ static const char *TAG = "BUTTON";
 
 static void button_single_click_event_cb(void *arg, void *data) {
     ESP_LOGI(TAG, "Button single click!");
+    set_brightness((get_brightness() + 1)% 8);
 }
 
 static void button_double_click_event_cb(void *arg, void *data) {
     ESP_LOGI(TAG, "Button double click!");
+    set_brightness(0);
 }
 
 static void button_long_press_event_cb(void *arg, void *data) {
     ESP_LOGI(TAG, "Button long press!");
+    set_brightness(8); // or start bt pairing?
 }
 
 static void button_repeat_event_cb(void *arg, void *data) {
     ESP_LOGI(TAG, "Button press repeat!");
 }
 
-void start_buttonread(void *) {
+void start_buttonread() {
     const button_config_t btn_cfg = {
         .long_press_time = 5000,      // Long press time in milliseconds
         .short_press_time = 200,      // Short press time in milliseconds

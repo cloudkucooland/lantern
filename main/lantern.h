@@ -1,7 +1,7 @@
 void start_neopixel(void *);
 void set_brightness(int);
 int get_brightness(void);
-void start_buttonread(void *);
+void start_buttonread();
 
 #define PIXEL_COUNT 8 
 #define NEOPIXEL_PIN GPIO_NUM_7

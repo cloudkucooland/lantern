@@ -13,8 +13,7 @@
 
 void app_main(void) {
     // run the lights on very-low-priority
-    xTaskCreate(start_neopixel, "start_neopixel", 1024, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(start_neopixel, "start_neopixel", 2048, NULL, tskIDLE_PRIORITY, NULL);
 
-    // start a task to listen for button presses to change brightness/off etc
-    xTaskCreate(start_buttonread, "start_buttonread", 1024, NULL, tskIDLE_PRIORITY, NULL);
+    start_buttonread();
 }
