@@ -6,14 +6,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "sdkconfig.h"
 #include "lantern.h"
+#include "sdkconfig.h"
 
 // static const char *TAG = "lantern";
 
 void app_main(void) {
-    // run the lights on very-low-priority
-    xTaskCreate(start_neopixel, "start_neopixel", 2048, NULL, tskIDLE_PRIORITY, NULL);
+  // run the lights on very-low-priority
+  xTaskCreate(start_neopixel, "start_neopixel", 2048, NULL, tskIDLE_PRIORITY,
+              NULL);
 
-    start_buttonread();
+  start_buttonread();
 }
